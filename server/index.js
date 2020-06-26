@@ -1,10 +1,12 @@
 const path = require('path')
+const http = require('http')
 const express = require('express')
+
 const socketio = require('socket.io')
 const app = express()
-const http = require('http').createServer(app)
+const server = http.createServer(app)
 const PORT = process.env.PORT || 8080
-const io = require('socket.io')(http)
+const io = socketio(server)
 
 const morgan = require('morgan')
 const compression = require('compression')
@@ -13,6 +15,7 @@ const passport = require('passport')
 const SequelizeStore = require('connect-session-sequelize')(session.Store)
 const db = require('./db')
 const sessionStore = new SequelizeStore({db})
+const botName = 'ChatCord Bot'
 
 const formatMessage = require('./utils/messages')
 const {
@@ -22,7 +25,6 @@ const {
   getRoomUsers
 } = require('./utils/users')
 
-module.exports = app
 // This is a global Mocha hook, used for resource cleanup.
 // Otherwise, Mocha v4+ never quits after tests.
 if (process.env.NODE_ENV === 'test') {
@@ -94,7 +96,7 @@ const createApp = () => {
 
   // sends index.html
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public'))
+    res.sendFile(path.join(__dirname, '..', 'public/index.html'))
   })
 
   // Connecting socket. HTTP server that will take care of starting the server and handling interactions with Socket.io ( sending and recieving messages)
@@ -159,13 +161,8 @@ const createApp = () => {
 
 const startListening = () => {
   // start listening (and create a 'server' object representing our server)
-  const server = app.listen(PORT, () =>
-    console.log(`Mixing it up on port ${PORT}`)
-  )
-
+  server.listen(PORT, () => console.log(`Mixing it up on port ${PORT}`))
   // set up our socket control center
-  const io = socketio(server)
-  require('./socket')(io)
 }
 
 const syncDb = () => db.sync()
@@ -185,3 +182,5 @@ if (require.main === module) {
 } else {
   createApp()
 }
+
+module.exports = app

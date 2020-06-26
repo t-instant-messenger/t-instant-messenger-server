@@ -8,7 +8,7 @@ class Routes extends Component {
     return (
       <Switch>
         {/* Routes placed here are available to all visitors */}
-        <Route exact path="/" component={ChatPage} />
+        {/* <Route exact path="/" component={ChatPage} /> */}
         <Route path="/chat" component={ChatPage} />
         <Route path="/setting" component={SettingsPage} />
       </Switch>
