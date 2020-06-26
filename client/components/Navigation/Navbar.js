@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import {connect} from 'react-redux'
 import {Link} from 'react-router-dom'
-import {logout} from '../store'
+// import {logout} from '../../store'
 import {makeStyles} from '@material-ui/core/styles'
 import AppBar from '@material-ui/core/AppBar'
 import Typography from '@material-ui/core/Typography'
@@ -33,39 +33,12 @@ const Navbar = ({handleClick, isLoggedIn}) => {
           </Typography>
 
           <nav className="nav_links">
-            {isLoggedIn ? (
-              <div>
-                {/* The navbar will show these links after you log in */}
-                <div>
-                  <Link className="account" to="/account">
-                    ACCOUNT
-                  </Link>
-                </div>
-                <div>
-                  <a href="#" onClick={handleClick}>
-                    LOGOUT
-                  </a>
-                </div>
-              </div>
-            ) : (
-              <div>
-                {/* The navbar will show these links before you log in */}
-                <Link to="/login">
-                  <Button color="inherit">LOGIN</Button>
-                </Link>
-
-                <Link to="/signup">
-                  <Button color="inherit">SIGN UP</Button>
-                </Link>
-              </div>
-            )}
-
-            <Link className="shop" to="/shop">
-              <Button color="inherit">Shop</Button>
+            <Link className="chat" to="/chat">
+              <Button color="inherit">Chat</Button>
             </Link>
 
-            <Link className="cart" to="/cart">
-              <Button color="inherit">Cart</Button>
+            <Link className="setting" to="/setting">
+              <Button color="inherit">Setting</Button>
             </Link>
           </nav>
           <hr />

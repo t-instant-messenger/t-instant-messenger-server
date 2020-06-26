@@ -1,5 +1,11 @@
 const path = require('path')
 const express = require('express')
+const socketio = require('socket.io')
+const app = express()
+const http = require('http').createServer(app)
+const PORT = process.env.PORT || 8080
+const io = require('socket.io')(http)
+
 const morgan = require('morgan')
 const compression = require('compression')
 const session = require('express-session')
@@ -7,11 +13,16 @@ const passport = require('passport')
 const SequelizeStore = require('connect-session-sequelize')(session.Store)
 const db = require('./db')
 const sessionStore = new SequelizeStore({db})
-const PORT = process.env.PORT || 8080
-const app = express()
-const socketio = require('socket.io')
-module.exports = app
 
+const formatMessage = require('./utils/messages')
+const {
+  userJoin,
+  getCurrentUser,
+  userLeave,
+  getRoomUsers
+} = require('./utils/users')
+
+module.exports = app
 // This is a global Mocha hook, used for resource cleanup.
 // Otherwise, Mocha v4+ never quits after tests.
 if (process.env.NODE_ENV === 'test') {
@@ -82,10 +93,62 @@ const createApp = () => {
   })
 
   // sends index.html
-  app.use('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public/index.html'))
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'public'))
   })
 
+  // Connecting socket. HTTP server that will take care of starting the server and handling interactions with Socket.io ( sending and recieving messages)
+  io.on('connection', socket => {
+    socket.on('joinRoom', ({username, room}) => {
+      const user = userJoin(socket.id, username, room)
+
+      socket.join(user.room)
+
+      // Welcome current user
+      socket.emit('message', formatMessage(botName, 'Welcome to ChatCord!'))
+
+      // Broadcast when a user connects
+      socket.broadcast
+        .to(user.room)
+        .emit(
+          'message',
+          formatMessage(botName, `${user.username} has joined the chat`)
+        )
+
+      // Send users and room info
+      io.to(user.room).emit('roomUsers', {
+        room: user.room,
+        users: getRoomUsers(user.room)
+      })
+    })
+
+    // Listen for chatMessage
+    socket.on('chatMessage', msg => {
+      const user = getCurrentUser(socket.id)
+
+      io.to(user.room).emit('message', formatMessage(user.username, msg))
+    })
+
+    // Runs when client disconnects
+    socket.on('disconnect', () => {
+      const user = userLeave(socket.id)
+
+      if (user) {
+        io
+          .to(user.room)
+          .emit(
+            'message',
+            formatMessage(botName, `${user.username} has left the chat`)
+          )
+
+        // Send users and room info
+        io.to(user.room).emit('roomUsers', {
+          room: user.room,
+          users: getRoomUsers(user.room)
+        })
+      }
+    })
+  })
   // error handling endware
   app.use((err, req, res, next) => {
     console.error(err)
