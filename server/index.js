@@ -15,7 +15,7 @@ const passport = require('passport')
 const SequelizeStore = require('connect-session-sequelize')(session.Store)
 const db = require('./db')
 const sessionStore = new SequelizeStore({db})
-const botName = 'ChatCord Bot'
+const botName = 'TIM'
 
 const formatMessage = require('./utils/messages')
 const {
@@ -107,7 +107,7 @@ const createApp = () => {
       socket.join(user.room)
 
       // Welcome current user
-      socket.emit('message', formatMessage(botName, 'Welcome to ChatCord!'))
+      socket.emit('message', formatMessage(botName, 'Welcome to TIM!'))
 
       // Broadcast when a user connects
       socket.broadcast

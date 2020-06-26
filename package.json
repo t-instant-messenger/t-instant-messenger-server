@@ -1,5 +1,5 @@
 {
-  "name": "translate-messenger",
+  "name": "instant-messenger",
   "version": "2.0.0",
   "description": "This is a web appication that translate messages to the other user in real time!",
   "engines": {
